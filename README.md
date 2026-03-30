@@ -18,6 +18,9 @@ This starter is intentionally small. It gives you a controlled experiment harnes
 
 - `gateway-service`: accepts shipment creation requests
 - `processor-service`: simulates downstream shipment processing
+- Dockerfiles for the gateway and processor containers
+- CloudFormation templates for ECR and the ECS Fargate REST baseline
+- PowerShell deployment scripts for AWS image push and stack deployment
 - switchable communication mode:
   - `rest`: gateway calls processor over HTTP
   - `event`: gateway enqueues work on an in-memory async queue
@@ -34,9 +37,22 @@ This starter is intentionally small. It gives you a controlled experiment harnes
 |   |-- metrics.py
 |   |-- models.py
 |   `-- processor.py
+|-- cloudformation/
+|   |-- ecr-repositories.yaml
+|   `-- fargate-rest-baseline.yaml
+|-- docs/
+|   `-- fargate-rest-baseline.md
 |-- loadtests/
 |   `-- create_shipments.js
+|-- scripts/
+|   |-- build-and-push-images.ps1
+|   |-- deploy-ecr.ps1
+|   |-- deploy-fargate-rest.ps1
+|   `-- get-fargate-url.ps1
 |-- .env.example
+|-- .dockerignore
+|-- Dockerfile.gateway
+|-- Dockerfile.processor
 |-- main.py
 `-- requirements.txt
 ```
@@ -130,10 +146,19 @@ k6 run .\loadtests\create_shipments.js
 - compare local network latency against remote cloud network latency
 - collect p50, p95, throughput, and failure rate
 
+## Fargate REST Baseline
+
+The concrete ECS Fargate deployment for the serverless portion is documented in [docs/fargate-rest-baseline.md](c:\SFU%20Grad\Spring%202026\CMPT%20756\Final%20Project\CMPT756---Group-Project\docs\fargate-rest-baseline.md). It covers:
+
+- creating ECR repositories
+- building and pushing both service images
+- deploying the Fargate stack behind an ALB
+- running the same k6 workload against the Fargate gateway
+- recording metrics for comparison against local and EC2
+
 ### Phase 3: Real event infrastructure
 
 - replace the in-memory queue with AWS SQS, SNS, or EventBridge
 - compare managed messaging overhead against direct REST calls
 - study scaling behavior under increased concurrency
-
 

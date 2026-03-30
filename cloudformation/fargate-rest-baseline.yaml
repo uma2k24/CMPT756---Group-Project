@@ -1,0 +1,384 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ECS Fargate REST baseline for the Pacco experiment gateway and processor services.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pacco-experiment
+    AllowedPattern: "[a-z0-9-]+"
+  GatewayImageUri:
+    Type: String
+    Description: Full ECR image URI for the gateway container.
+  ProcessorImageUri:
+    Type: String
+    Description: Full ECR image URI for the processor container.
+  DesiredCount:
+    Type: Number
+    Default: 1
+    MinValue: 1
+  GatewayCpu:
+    Type: String
+    Default: "256"
+    AllowedValues: ["256", "512", "1024", "2048"]
+  GatewayMemory:
+    Type: String
+    Default: "512"
+    AllowedValues: ["512", "1024", "2048", "3072", "4096"]
+  ProcessorCpu:
+    Type: String
+    Default: "256"
+    AllowedValues: ["256", "512", "1024", "2048"]
+  ProcessorMemory:
+    Type: String
+    Default: "512"
+    AllowedValues: ["512", "1024", "2048", "3072", "4096"]
+  ProcessorDelayMs:
+    Type: Number
+    Default: 75
+    MinValue: 0
+  VpcCidr:
+    Type: String
+    Default: 10.42.0.0/16
+  PublicSubnet1Cidr:
+    Type: String
+    Default: 10.42.0.0/24
+  PublicSubnet2Cidr:
+    Type: String
+    Default: 10.42.1.0/24
+  ContainerPort:
+    Type: Number
+    Default: 8000
+    MinValue: 1
+    MaxValue: 65535
+
+Resources:
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidr
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-vpc"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-igw"
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref Vpc
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      CidrBlock: !Ref PublicSubnet1Cidr
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-public-a"
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      CidrBlock: !Ref PublicSubnet2Cidr
+      MapPublicIpOnLaunch: true
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-public-b"
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-public-rt"
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2Association:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  ProcessorNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub "${ProjectName}.local"
+      Vpc: !Ref Vpc
+
+  ProcessorDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: processor
+      NamespaceId: !Ref ProcessorNamespace
+      DnsConfig:
+        DnsRecords:
+          - Type: A
+            TTL: 10
+        RoutingPolicy: MULTIVALUE
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ProjectName}-cluster"
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public ingress to the experiment ALB
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  GatewaySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Gateway service ingress from the ALB
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  ProcessorSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Processor service ingress from the gateway
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref ContainerPort
+          ToPort: !Ref ContainerPort
+          SourceSecurityGroupId: !Ref GatewaySecurityGroup
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref Vpc
+
+  ExperimentLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref AlbSecurityGroup
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      Type: application
+
+  GatewayTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckPath: /health
+      HealthCheckPort: traffic-port
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: "200"
+      Port: !Ref ContainerPort
+      Protocol: HTTP
+      TargetType: ip
+      VpcId: !Ref Vpc
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref GatewayTargetGroup
+      LoadBalancerArn: !Ref ExperimentLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  GatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}/gateway"
+      RetentionInDays: 14
+
+  ProcessorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/${ProjectName}/processor"
+      RetentionInDays: 14
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+
+  ProcessorTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ProjectName}-processor"
+      Cpu: !Ref ProcessorCpu
+      Memory: !Ref ProcessorMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: processor
+          Image: !Ref ProcessorImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+              Protocol: tcp
+          Environment:
+            - Name: ARTIFICIAL_DELAY_MS
+              Value: !Sub "${ProcessorDelayMs}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ProcessorLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  GatewayTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub "${ProjectName}-gateway"
+      Cpu: !Ref GatewayCpu
+      Memory: !Ref GatewayMemory
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      ContainerDefinitions:
+        - Name: gateway
+          Image: !Ref GatewayImageUri
+          Essential: true
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+              Protocol: tcp
+          Environment:
+            - Name: COMMUNICATION_MODE
+              Value: rest
+            - Name: PROCESSOR_BASE_URL
+              Value: !Sub "http://processor.${ProjectName}.local:${ContainerPort}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref GatewayLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  ProcessorService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub "${ProjectName}-processor"
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref ProcessorTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref ProcessorSecurityGroup
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+      ServiceRegistries:
+        - RegistryArn: !GetAtt ProcessorDiscoveryService.Arn
+
+  GatewayService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HttpListener
+      - ProcessorService
+    Properties:
+      ServiceName: !Sub "${ProjectName}-gateway"
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: !Ref DesiredCount
+      HealthCheckGracePeriodSeconds: 60
+      TaskDefinition: !Ref GatewayTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref GatewaySecurityGroup
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+      LoadBalancers:
+        - ContainerName: gateway
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref GatewayTargetGroup
+
+Outputs:
+  ClusterName:
+    Value: !Ref Cluster
+  LoadBalancerDnsName:
+    Value: !GetAtt ExperimentLoadBalancer.DNSName
+  GatewayUrl:
+    Value: !Sub "http://${ExperimentLoadBalancer.DNSName}"
+  GatewayHealthUrl:
+    Value: !Sub "http://${ExperimentLoadBalancer.DNSName}/health"
+  ProcessorServiceDiscoveryUrl:
+    Value: !Sub "http://processor.${ProjectName}.local:${ContainerPort}"
