@@ -1,0 +1,183 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "Register account success (201)": {
+                    "passes": 3369,
+                    "fails": 0,
+                    "name": "Register account success (201)",
+                    "path": "::Register account success (201)",
+                    "id": "77ce3ac7753c747abf5eea85354c9d4c"
+                },
+                "Log in to account success (200)": {
+                    "id": "a13381a86c64a4cb0c25bd37993be231",
+                    "passes": 3369,
+                    "fails": 0,
+                    "name": "Log in to account success (200)",
+                    "path": "::Log in to account success (200)"
+                },
+                "Parcel created (201)": {
+                    "name": "Parcel created (201)",
+                    "path": "::Parcel created (201)",
+                    "id": "42b3e6c333e84ae7d023905576fc1b17",
+                    "passes": 3367,
+                    "fails": 2
+                },
+                "Order success (201)": {
+                    "name": "Order success (201)",
+                    "path": "::Order success (201)",
+                    "id": "5d6cf3ca9603a455bf7431d65b9cd7d9",
+                    "passes": 3367,
+                    "fails": 2
+                },
+                "Add parcel success (200)": {
+                    "fails": 19,
+                    "name": "Add parcel success (200)",
+                    "path": "::Add parcel success (200)",
+                    "id": "ea82dddd4269f94e79706b44a6c29dcf",
+                    "passes": 3350
+                },
+                "Create vehicle success (201)": {
+                    "passes": 3325,
+                    "fails": 44,
+                    "name": "Create vehicle success (201)",
+                    "path": "::Create vehicle success (201)",
+                    "id": "2cb55be48c96de16682a3da1f26e5c1e"
+                },
+                "Add vehicle to order success (200)": {
+                    "id": "1d1c0acdda57aa3202ae055c68c54f37",
+                    "passes": 3321,
+                    "fails": 48,
+                    "name": "Add vehicle to order success (200)",
+                    "path": "::Add vehicle to order success (200)"
+                },
+                "Start delivery success (201)": {
+                    "name": "Start delivery success (201)",
+                    "path": "::Start delivery success (201)",
+                    "id": "4e11a8bf9b0dce33c8ffa126a0bf2807",
+                    "passes": 3306,
+                    "fails": 63
+                },
+                "Complete delivery success (200)": {
+                    "name": "Complete delivery success (200)",
+                    "path": "::Complete delivery success (200)",
+                    "id": "2799b82d5ef243d30d18b53a59678b4f",
+                    "passes": 3301,
+                    "fails": 68
+                }
+            }
+    },
+    "metrics": {
+        "data_received": {
+            "count": 9325388,
+            "rate": 158174.34678235312
+        },
+        "http_req_sending": {
+            "avg": 0.02781593859041569,
+            "min": 0.004179,
+            "med": 0.020764,
+            "max": 5.051298,
+            "p(90)": 0.038946,
+            "p(95)": 0.05539
+        },
+        "data_sent": {
+            "count": 17476346,
+            "rate": 296428.3751724207
+        },
+        "iteration_duration": {
+            "min": 166.63183,
+            "med": 1734.053007,
+            "max": 4029.01635,
+            "p(90)": 2492.5084154,
+            "p(95)": 2717.5565191999995,
+            "avg": 1807.0842145568395
+        },
+        "iterations": {
+            "count": 3369,
+            "rate": 57.14393592092336
+        },
+        "vus": {
+            "value": 52,
+            "min": 52,
+            "max": 100
+        },
+        "http_req_connecting": {
+            "p(95)": 0,
+            "avg": 0.003982150390818245,
+            "min": 0,
+            "med": 0,
+            "max": 5.544738,
+            "p(90)": 0
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_req_failed": {
+            "passes": 246,
+            "fails": 30075,
+            "value": 0.008113188878994756
+        },
+        "http_req_receiving": {
+            "max": 543.973787,
+            "p(90)": 1.264363,
+            "p(95)": 5.055776,
+            "avg": 1.2575394481052795,
+            "min": 0.012352,
+            "med": 0.083123
+        },
+        "http_req_duration{expected_response:true}": {
+            "min": 0.042083,
+            "med": 153.081462,
+            "max": 1448.843462,
+            "p(90)": 406.5688088,
+            "p(95)": 502.5119811,
+            "avg": 199.81112962005005
+        },
+        "http_req_blocked": {
+            "avg": 0.010667236271890654,
+            "min": 0.000912,
+            "med": 0.004755,
+            "max": 5.605034,
+            "p(90)": 0.007565,
+            "p(95)": 0.009259
+        },
+        "http_reqs": {
+            "count": 30321,
+            "rate": 514.2954232883102
+        },
+        "vus_max": {
+            "value": 100,
+            "min": 100,
+            "max": 100
+        },
+        "http_req_waiting": {
+            "min": 0,
+            "med": 149.921376,
+            "max": 1448.748572,
+            "p(90)": 404.655306,
+            "p(95)": 499.691443,
+            "avg": 197.06499782678685
+        },
+        "checks": {
+            "passes": 30075,
+            "fails": 246,
+            "value": 0.9918868111210053
+        },
+        "http_req_duration": {
+            "min": 0.042083,
+            "med": 151.763863,
+            "max": 1448.843462,
+            "p(90)": 405.512088,
+            "p(95)": 501.226158,
+            "avg": 198.35035321348232
+        }
+    }
+}
