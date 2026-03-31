@@ -1,0 +1,183 @@
+{
+    "metrics": {
+        "http_req_connecting": {
+            "p(95)": 0,
+            "avg": 0.00615539982190561,
+            "min": 0,
+            "med": 0,
+            "max": 4.967514,
+            "p(90)": 0
+        },
+        "http_req_sending": {
+            "avg": 0.027956621549421183,
+            "min": 0.005985,
+            "med": 0.0222625,
+            "max": 0.757954,
+            "p(90)": 0.0494519,
+            "p(95)": 0.05779934999999999
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 4492,
+            "value": 0
+        },
+        "http_reqs": {
+            "count": 4492,
+            "rate": 423.4741413465154
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 23.285938996883424,
+            "min": 4.902031,
+            "med": 15.459157000000001,
+            "max": 560.021258,
+            "p(90)": 44.9029016,
+            "p(95)": 61.12438744999999
+        },
+        "iterations": {
+            "count": 496,
+            "rate": 46.7593887150204
+        },
+        "http_req_blocked": {
+            "p(90)": 0.007468,
+            "p(95)": 0.008588099999999998,
+            "avg": 0.013722147818343732,
+            "min": 0.001286,
+            "med": 0.004991499999999999,
+            "max": 5.142202
+        },
+        "http_req_waiting": {
+            "max": 559.589179,
+            "p(90)": 44.4146914,
+            "p(95)": 60.959086899999996,
+            "avg": 22.999392235752477,
+            "min": 4.844515,
+            "med": 15.147931
+        },
+        "data_sent": {
+            "count": 2590441,
+            "rate": 244208.5436740447
+        },
+        "http_req_tls_handshaking": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0,
+            "min": 0,
+            "med": 0,
+            "max": 0
+        },
+        "iteration_duration": {
+            "max": 1313.36053,
+            "p(90)": 274.3714095,
+            "p(95)": 313.4097385,
+            "avg": 212.76878572782246,
+            "min": 129.672653,
+            "med": 173.678309
+        },
+        "data_received": {
+            "count": 1387044,
+            "rate": 130760.74508233217
+        },
+        "vus_max": {
+            "min": 10,
+            "max": 10,
+            "value": 10
+        },
+        "http_req_duration": {
+            "avg": 23.285938996883424,
+            "min": 4.902031,
+            "med": 15.459157000000001,
+            "max": 560.021258,
+            "p(90)": 44.9029016,
+            "p(95)": 61.12438744999999
+        },
+        "http_req_receiving": {
+            "p(95)": 1.0253989999999993,
+            "avg": 0.2585901395814776,
+            "min": 0.018237,
+            "med": 0.11249,
+            "max": 8.74219,
+            "p(90)": 0.5980605000000001
+        },
+        "checks": {
+            "passes": 4492,
+            "fails": 0,
+            "value": 1
+        },
+        "vus": {
+            "value": 10,
+            "min": 10,
+            "max": 10
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "Register account success (201)": {
+                    "name": "Register account success (201)",
+                    "path": "::Register account success (201)",
+                    "id": "77ce3ac7753c747abf5eea85354c9d4c",
+                    "passes": 504,
+                    "fails": 0
+                },
+                "Log in to account success (200)": {
+                    "fails": 0,
+                    "name": "Log in to account success (200)",
+                    "path": "::Log in to account success (200)",
+                    "id": "a13381a86c64a4cb0c25bd37993be231",
+                    "passes": 500
+                },
+                "Parcel created (201)": {
+                    "path": "::Parcel created (201)",
+                    "id": "42b3e6c333e84ae7d023905576fc1b17",
+                    "passes": 500,
+                    "fails": 0,
+                    "name": "Parcel created (201)"
+                },
+                "Order success (201)": {
+                    "fails": 0,
+                    "name": "Order success (201)",
+                    "path": "::Order success (201)",
+                    "id": "5d6cf3ca9603a455bf7431d65b9cd7d9",
+                    "passes": 500
+                },
+                "Add parcel success (200)": {
+                    "name": "Add parcel success (200)",
+                    "path": "::Add parcel success (200)",
+                    "id": "ea82dddd4269f94e79706b44a6c29dcf",
+                    "passes": 500,
+                    "fails": 0
+                },
+                "Create vehicle success (201)": {
+                    "name": "Create vehicle success (201)",
+                    "path": "::Create vehicle success (201)",
+                    "id": "2cb55be48c96de16682a3da1f26e5c1e",
+                    "passes": 498,
+                    "fails": 0
+                },
+                "Add vehicle to order success (200)": {
+                    "fails": 0,
+                    "name": "Add vehicle to order success (200)",
+                    "path": "::Add vehicle to order success (200)",
+                    "id": "1d1c0acdda57aa3202ae055c68c54f37",
+                    "passes": 498
+                },
+                "Start delivery success (201)": {
+                    "name": "Start delivery success (201)",
+                    "path": "::Start delivery success (201)",
+                    "id": "4e11a8bf9b0dce33c8ffa126a0bf2807",
+                    "passes": 496,
+                    "fails": 0
+                },
+                "Complete delivery success (200)": {
+                    "fails": 0,
+                    "name": "Complete delivery success (200)",
+                    "path": "::Complete delivery success (200)",
+                    "id": "2799b82d5ef243d30d18b53a59678b4f",
+                    "passes": 496
+                }
+            }
+    }
+}
