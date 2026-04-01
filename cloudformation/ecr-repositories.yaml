@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ECR repositories for the Pacco Fargate REST baseline.
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: pacco-experiment
+    AllowedPattern: "[a-z0-9-]+"
+
+Resources:
+  GatewayRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${ProjectName}-gateway"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+
+  ProcessorRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${ProjectName}-processor"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+
+Outputs:
+  GatewayRepositoryName:
+    Value: !Ref GatewayRepository
+  GatewayRepositoryUri:
+    Value: !GetAtt GatewayRepository.RepositoryUri
+  ProcessorRepositoryName:
+    Value: !Ref ProcessorRepository
+  ProcessorRepositoryUri:
+    Value: !GetAtt ProcessorRepository.RepositoryUri
