@@ -5,8 +5,13 @@ import { check, sleep } from 'k6';
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:5000';
 
 export const options = {
-  vus: __ENV.VUS || 10,  // Specify # of concurrent users (10, 100, 1000); default is 10
-  duration: '1m', // Run for 1 minute
+  // Define # of concurrent users at different stages
+  stages: [
+    { duration: '15s', target: 10 },
+    { duration: '15s', target: 100 },
+    { duration: '15s', target: 1000 },
+    { duration: '15s', target: 0 },
+  ],
 };
 
 // Tests based on Pacco-sample-scenario.rest file
@@ -18,7 +23,6 @@ export default function () {
   // Register Pacco account
   const register_url = `${BASE_URL}/identity/sign-up`;
   const register_payload = JSON.stringify({
-    // __VU stores current user ID (1, 2, 3, etc.)
     email: `pacco-user${user_id}@mailinator.com`,
     password: 'secret',
     role: 'user',
