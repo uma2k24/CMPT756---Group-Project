@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
@@ -28,6 +29,32 @@ export default function () {
     password: 'secret',
     role: 'user',
   });
+=======
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+const BASE_URL = __ENV.BASE_URL || 'http://localhost:5000';
+
+export const options = {
+  vus: Number(__ENV.VUS || 10),
+  duration: __ENV.DURATION || '1m',
+};
+
+// Tests based on Pacco-sample-scenario.rest file
+export default function () {
+  const params = { headers: { 'Content-Type': 'application/json', } };
+  const empty_payload = '{}';
+  const user_id = `${__VU}-${__ITER}-${Date.now()}`;
+  const email = `pacco-user${user_id}@mailinator.com`;
+
+  // Register Pacco account
+  const register_url = `${BASE_URL}/identity/sign-up`;
+  const register_payload = JSON.stringify({
+    email: email,
+    password: 'secret',
+    role: 'user',
+  });
+>>>>>>> 0259b2dc78e9b5d8f81eebc1a6f8dc0d4be505c0
 
   const register_res = http.post(register_url, register_payload, params);
 
@@ -37,12 +64,20 @@ export default function () {
 
 
   // Log in to Pacco account
+<<<<<<< HEAD
   const login_url = `${BASE_URL}/identity/sign-in`;
   const login_payload = JSON.stringify({
     // __VU stores current user ID (1, 2, 3, etc.)
     email: email,
     password: 'secret',
   });
+=======
+  const login_url = `${BASE_URL}/identity/sign-in`;
+  const login_payload = JSON.stringify({
+    email: email,
+    password: 'secret',
+  });
+>>>>>>> 0259b2dc78e9b5d8f81eebc1a6f8dc0d4be505c0
 
   const login_res = http.post(login_url, login_payload, params);
   const access_token = login_res.json('accessToken');
@@ -169,5 +204,5 @@ export default function () {
   // });
 
 
-//    sleep(1);
+  sleep(1);
 }

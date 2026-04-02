@@ -3,7 +3,6 @@ import Amqp from 'k6/x/amqp';
 import Queue from 'k6/x/amqp/queue';
 import { Counter } from 'k6/metrics';
 
-// Get the base URL from an environment variable, or default to localhost
 const BASE_URL = __ENV.BASE_URL || 'amqp://guest:guest@localhost:5672/';
 
 // Keep track of data size to calculate throughput
@@ -13,13 +12,14 @@ const BASE_URL = __ENV.BASE_URL || 'amqp://guest:guest@localhost:5672/';
 const total_data = new Counter('total_data');
 
 export const options = {
-  // vus: __ENV.VUS || 10,  // Specify # of concurrent users (10, 100, 1000); default is 10
-  duration: '1m', // Run for 1 minute
+  vus: Number(__ENV.VUS || 10),
+  duration: __ENV.DURATION || '1m',
 };
 
 // Tests based on Pacco-sample-scenario.rest file
 export default function () {
-  const user_id = Math.random();
+  const user_id = `${__VU}-${__ITER}-${Date.now()}`;
+  const email = `pacco-user${user_id}@mailinator.com`;
   
   // Connect to RabbitMQ
   Amqp.start({ connection_url: BASE_URL });
@@ -28,7 +28,7 @@ export default function () {
 
   // Register Pacco account
   const register_payload = JSON.stringify({
-    email: `pacco-user${user_id}@mailinator.com`,
+    email: email,
     password: 'secret',
     role: 'user',
   });
@@ -56,8 +56,7 @@ export default function () {
 
   // Log in to Pacco account
   const login_payload = JSON.stringify({
-    // __VU stores current user ID (1, 2, 3, etc.)
-    email: `pacco-user${__VU}@mailinator.com`,
+    email: email,
     password: 'secret',
   });
 
